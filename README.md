@@ -5,7 +5,7 @@ Helper script to connect and disconnect from VPNs using [OpenVPN3](https://openv
 ### Quickstart
 
 How to list all available configurations, connect to a configuration, see all active sessions and then disconnect:
-```bash
+```sh
 python vpn.py -l
 python vpn.py -c CONFIG_NAME
 python vpn.py -s
@@ -13,7 +13,7 @@ python vpn.py -d CONFIG_NAME
 ```
 
 For help, use
-```bash
+```sh
 python vpn.py -h
 python vpn.py --help
 ```
