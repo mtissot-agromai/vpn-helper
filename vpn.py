@@ -35,25 +35,30 @@ def UNREACHABLE(args):
 		print(f"{arg}")
 	exit(1)
 
+def bw(text):
+	return f"{COLOR['bold']}{text}{COLOR['reset']}"
+
 def usage():
 	print("\n")
 	print("="*20)
 	print("\nUSAGE:")
-	print("vpn.py -l | vpn.py --list -> List all available configurations.")
-	print("vpn.py -s | vpn.py --sessions -> List all active sessions.")
-	print("vpn.py -c CONFIG_NAME -> Connect to CONFIG_NAME.")
-	print("vpn.py -d CONFIG_NAME -> Disconnect from CONFIG_NAME.")
-	print("vpn.py -h | vpn.py --help -> To see USAGE.")
+	print(f"{bw("vpn.py -l")} | {bw("vpn.py --list")}                 -> List all available configurations.")
+	print(f"{bw("vpn.py -s")} | {bw("vpn.py --sessions")}             -> List all active sessions.")
+	print(f"{bw("vpn.py -c CONFIG_NAME")}                     -> Connect to CONFIG_NAME.")
+	print(f"{bw("vpn.py -d CONFIG_NAME")}                     -> Disconnect from CONFIG_NAME.")
+	print(f"{bw("vpn.py --new CONFIG_FILE.ovpn CONFIG_NAME")} -> Create a configuration named CONFIG_NAME from CONFIG_FILE")
+	print(f"{bw("vpn.py --rmc CONFIG_NAME")}                  -> Remove a configuration named CONFIG_NAME the configurations")
+	print(f"{bw("vpn.py -h")} | {bw("vpn.py --help")}                 -> To see USAGE.")
+	print()
 
 def main(args):
 	if len(sys.argv)>1:
-		if "-h" in args or "--help" in args:
-			print(f"You have added the flag for help. Voiding all other flags added.")
-			usage()
-			return
 		if "-l" in args or "--list" in args:
-			print("Listing all configurations:")
-			cmd = BASE_COMMAND + "configs-list"
+			verbose = False
+			if ("-v" in args) or ("--verbose" in args):
+				verbose = True
+			print("Listing all configurations" + verbose*" in a verbose way" + ":")
+			cmd = BASE_COMMAND + "configs-list" + verbose*" --verbose"
 			proc = subprocess.run(cmd, shell=True)
 			if proc.returncode == 0:
 				return
@@ -89,8 +94,8 @@ Check the available configurations using 'vpn.py -l' or 'vpn.py --list'""")
 			except Exception as e:
 				print(f"Exception: {e}")
 				print(f"""Invalid config name: {config_name}.
--- Run 'vpn -l' first to see available configurations.
--- You can also run 'vpn -h' or 'vpn --help' to see how to use the script.""")
+-- Run {COLOR['bold']}vpn -l{COLOR['reset']} or {COLOR['bold']}vpn --list{COLOR['reset']} first to see available configurations.
+-- You can also run {COLOR['bold']}vpn -h{COLOR['reset']} or {COLOR['bold']}vpn --help{COLOR['reset']} to see how to use the script.""")
 			return
 		if "-d" in args:
 			index = args.index("-d")
@@ -108,16 +113,77 @@ Check the available configurations using 'vpn.py -l' or 'vpn.py --list'""")
 					print(f"{COLOR['cyan']}Succesfully {COLOR['red']}{COLOR['bold']}disconnected {COLOR['reset']}{COLOR['cyan']}from {COLOR['yellow']}{COLOR['bold']}{config_name}{COLOR['reset']}")
 				else:
 					print(f"""{COLOR['red']}Could not disconnect from {COLOR['yellow']}{COLOR['bold']}{config_name}{COLOR['reset']}.
-Check the available configurations using 'vpn.py -l' or 'vpn.py --list'.
-Check the active sessions using 'vpn.py -s' or 'vpn.py --sessions'""")
+Check the available configurations using {COLOR['bold']}vpn -l{COLOR['reset']} or {COLOR['bold']}vpn --list{COLOR['reset']}.
+Check the active sessions using {COLOR['bold']}vpn -s{COLOR['reset']} or {COLOR['bold']}vpn --sessions{COLOR['reset']}""")
 					usage()
 			except Exception as e:
 				print(f"Exception: {e}")
 				print(f"""Invalid config name: {config_name}.
--- Run 'vpn -s' or 'vpn --sessions' first to see active sessions.
--- Run 'vpn -l' or 'vpn --list' first to see available configurations.
--- You can also run 'vpn -h' or 'vpn --help' to see how to use the script.""")
+-- Run {COLOR['bold']}vpn -s{COLOR['reset']} or {COLOR['bold']}vpn --sessions{COLOR['reset']} first to see active sessions.
+-- Run {COLOR['bold']}vpn -l{COLOR['reset']} or {COLOR['bold']}vpn --list{COLOR['reset']} first to see available configurations.
+-- You can also run {COLOR['bold']}vpn -h{COLOR['reset']} or {COLOR['bold']}vpn --help{COLOR['reset']} to see how to use the script.""")
 				usage()
+			return
+		if ("--new" in args):
+			index = args.index("--new")
+			try:
+				config_file = args[index+1]
+				config_name = args[index+2]
+			except Exception as e:
+				print("You didn't provide a configuration file or configuration name.")
+				usage()
+				exit(1)
+			cmd = BASE_COMMAND + "config-import --config " + config_file + " --name " + config_name
+			proc = subprocess.run(cmd, shell=True)
+			try:
+				returnc = proc.returncode
+				if returnc == 0:
+					print(f"{COLOR['cyan']}Succesfully {COLOR['red']}{COLOR['bold']}created {COLOR['reset']}{COLOR['cyan']}config {COLOR['yellow']}{COLOR['bold']}{config_name}{COLOR['reset']} {COLOR['cyan']}from configuration file {COLOR['bold']}{config_file}{COLOR['reset']}")
+				else:
+					print(f"""{COLOR['red']}Could not create config {COLOR['yellow']}{COLOR['bold']}{config_name}{COLOR['reset']}{COLOR['cyan']} from {COLOR['bold']}{config_file}{COLOR['reset']}.""")
+					usage()
+			except Exception as e:
+				print(f"Exception: {e}")
+				print(f"""Invalid configuration file: {config_file}.
+-- Run 'vpn -h' or 'vpn --help' to see how to use the script.""")
+				usage()
+		if ("--rmc" in args):
+			path = False
+			if ("-h" in args) or ("--help" in args):
+				print(f"""If you are having difficulty removing the configuration, you can try removing it using the configuration path.
+Run {COLOR['bold']}vpn.py -l -v {COLOR['reset']}to show the path associated with each configuration. Copy the path of the configuration you want to delete.
+Run {COLOR['bold']}vpn.py --rmc -p PATH{COLOR['reset']} to remove it using its unique path.""")
+				return
+			index = args.index("--rmc")
+			if ("-p" in args):
+				index = args.index("-p")
+				path = True
+			try:
+				config_name = args[index+1]
+			except Exception as e:
+				print("You didn't provide a configuration name.")
+				usage()
+				exit(1)
+			cmd_normal = BASE_COMMAND + "config-remove --config " + config_name
+			cmd_path   = BASE_COMMAND + "config-remove --path " + config_name
+			cmd = (not path)*cmd_normal + (path)*cmd_path
+			proc = subprocess.run(cmd, shell=True)
+			try:
+				returnc = proc.returncode
+				if returnc == 0:
+					print(f"\n{COLOR['cyan']}Succesfully {COLOR['red']}{COLOR['bold']}removed {COLOR['reset']}{COLOR['cyan']}config {COLOR['yellow']}{COLOR['bold']}{config_name}{COLOR['reset']}")
+				else:
+					print(f"""\n{COLOR['red']}Could not remove config {COLOR['yellow']}{COLOR['bold']}{config_name}{COLOR['reset']}.
+Are you sure this configuration exists? Try running {COLOR['bold']}vpn.py -l{COLOR['reset']} to make sure.
+If you are typing the config name correctly, try running {COLOR['bold']}vpn.py --rmc -h{COLOR['reset']} to get help.""")
+					usage()
+			except Exception as e:
+				print(f"\nException: {e}")
+				print(f"""Invalid configuration name: {config_name}.
+-- Run {COLOR['bold']}vpn -h{COLOR['reset']} or {COLOR['bold']}vpn --help{COLOR['reset']} to see how to use the script.""")
+				usage()
+		if "-h" in args or "--help" in args:
+			usage()
 			return
 	else:
 		usage()

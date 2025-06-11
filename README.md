@@ -12,6 +12,16 @@ python vpn.py -s
 python vpn.py -d CONFIG_NAME
 ```
 
+To create a new configuration named `config_name` from a `config_file.ovpn`, run:
+```sh
+python vpn.py --new config_file.ovpn config_name
+```
+
+To remove a configuration named `config_to_remove` from your configurations, run:
+```sh
+python vpn.py --rmc config_to_remove
+```
+
 For help, use
 ```sh
 python vpn.py -h
