@@ -98,14 +98,25 @@ Check the available configurations using 'vpn.py -l' or 'vpn.py --list'""")
 -- You can also run {COLOR['bold']}vpn -h{COLOR['reset']} or {COLOR['bold']}vpn --help{COLOR['reset']} to see how to use the script.""")
 			return
 		if "-d" in args:
+			if ("-h" in args) or ("--help" in args):
+				print(f"""If you are having difficulty disconnecting, you can try removing it using the connection path.
+Run {COLOR['bold']}vpn.py -s {COLOR['reset']}to show the path associated with each connection. Copy the path of the connection you want to disconnect from.
+Run {COLOR['bold']}vpn.py -d -p PATH{COLOR['reset']} to remove it using its unique path.""")
+				return
+			path = False
 			index = args.index("-d")
+			if ("-p" in args):
+				index = args.index("-p")
+				path = True
 			try:
 				config_name = args[index+1]
 			except Exception as e:
 				print("You didn't provide a configuration name to disconnect from.")
 				usage()
 				exit(1)
-			cmd = BASE_COMMAND + "session-manage --config " + config_name + " --disconnect"
+			cmd_normal = BASE_COMMAND + "session-manage --config " + config_name + " --disconnect"
+			cmd_path = BASE_COMMAND + "session-manage --path " + config_name + " --disconnect"
+			cmd = cmd_path if path else cmd_normal
 			proc = subprocess.run(cmd, shell=True)
 			try:
 				returnc = proc.returncode

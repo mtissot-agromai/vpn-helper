@@ -45,6 +45,5 @@ alias vpnd='python /path/to/vpn.py -d CONFIG_NAME'
 Consider contributing by adding one or more of the features below:
 1. Ability to connect to multiple configs from the same `-c` command, using `vpn -c CONFIG1 CONFIG2`
 2. Ability to disconnect from multiple connections from the same `-d` command, using `vpn -d CONFIG1 CONFIG2`
-3. Ability to add a new config from a config file `config.ovpn` by using `vpn -a config.ovpn CONFIG_NAME` or `vpn --add config.ovpn CONFIG_NAME`
 
 These suggestions are all pretty easy, but I have't had the need for any of them yet, so they are on the backlog.
