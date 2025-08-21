@@ -42,13 +42,13 @@ def usage():
 	print("\n")
 	print("="*20)
 	print("\nUSAGE:")
-	print(f"{bw("vpn.py -l")} | {bw("vpn.py --list")}                 -> List all available configurations.")
-	print(f"{bw("vpn.py -s")} | {bw("vpn.py --sessions")}             -> List all active sessions.")
-	print(f"{bw("vpn.py -c CONFIG_NAME")}                     -> Connect to CONFIG_NAME.")
-	print(f"{bw("vpn.py -d CONFIG_NAME")}                     -> Disconnect from CONFIG_NAME.")
-	print(f"{bw("vpn.py --new CONFIG_FILE.ovpn CONFIG_NAME")} -> Create a configuration named CONFIG_NAME from CONFIG_FILE")
-	print(f"{bw("vpn.py --rmc CONFIG_NAME")}                  -> Remove a configuration named CONFIG_NAME the configurations")
-	print(f"{bw("vpn.py -h")} | {bw("vpn.py --help")}                 -> To see USAGE.")
+	print(f"{bw('vpn.py -l')} | {bw('vpn.py --list')}                 -> List all available configurations.")
+	print(f"{bw('vpn.py -s')} | {bw('vpn.py --sessions')}             -> List all active sessions.")
+	print(f"{bw('vpn.py -c CONFIG_NAME')}                     -> Connect to CONFIG_NAME.")
+	print(f"{bw('vpn.py -d CONFIG_NAME')}                     -> Disconnect from CONFIG_NAME.")
+	print(f"{bw('vpn.py --new CONFIG_FILE.ovpn CONFIG_NAME')} -> Create a configuration named CONFIG_NAME from CONFIG_FILE")
+	print(f"{bw('vpn.py --rmc CONFIG_NAME')}                  -> Remove a configuration named CONFIG_NAME the configurations")
+	print(f"{bw('vpn.py -h')} | {bw('vpn.py --help')}                 -> To see USAGE.")
 	print()
 
 def main(args):
@@ -82,6 +82,13 @@ def main(args):
 				print("You didn't provide a configuration name to connect to.")
 				usage()
 				exit(1)
+			check_connections = subprocess.run("openvpn3 sessions-list", shell=True, capture_output=True, text=True)
+			output = check_connections.stdout
+			if f"Config name: {config_name}" in output and "Status: Connection, Client connected" in output:
+				print(f"""{COLOR['red']}Connection to {COLOR['yellow']}{COLOR['bold']}{config_name}{COLOR['reset']} {COLOR['red']}unsuccessful{COLOR['reset']}.
+You are already connected to this VPN""")
+				return
+
 			cmd = BASE_COMMAND + "session-start --config " + config_name
 			proc = subprocess.run(cmd, shell=True)
 			try:
